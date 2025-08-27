@@ -2,7 +2,7 @@ backend:
   name: github
   repo: HarryLuoo/GZLuoSite
   branch: main
-  base_url: https://sveltia-cms-auth.netlify.app
+  base_url: https://decap-cms-oauth-provider-nu.vercel.app
 
 publish_mode: editorial_workflow
 
