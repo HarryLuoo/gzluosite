@@ -1,10 +1,17 @@
 source "https://rubygems.org"
 
-# Use GitHub Pages gem for compatibility
-gem "github-pages", group: :jekyll_plugins
+# Specify the Jekyll version
+gem "jekyll", "~> 4.2"
 
-# For local development, you can also include:
-gem "jekyll-theme-hamilton"
+# Jekyll plugins
+gem "jekyll-feed", "~> 0.15"
+gem "jekyll-remote-theme", "~> 0.4"
+gem "jekyll-seo-tag", "~> 2.7"
+gem "jekyll-sitemap", "~> 1.4"
+gem "minima", "~> 2.5"
+
+# For local development
+# gem "jekyll-theme-hamilton"
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
 # and associated library.
@@ -15,7 +22,3 @@ end
 
 # Performance-booster for watching directories on Windows
 gem "wdm", "~> 0.1.1", :platforms => [:mingw, :x64_mingw, :mswin]
-
-# Lock `http_parser.rb` gem to `v0.6.x` on JRuby builds since newer versions of the gem
-# do not have a Java counterpart.
-gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
