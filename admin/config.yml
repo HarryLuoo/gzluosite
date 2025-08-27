@@ -1,0 +1,32 @@
+backend:
+  name: github
+  repo: HarryLuoo/gzluosite
+  branch: main
+  base_url: https://netlify-auth-proxy.netlify.app
+
+publish_mode: editorial_workflow
+
+media_folder: "assets/img"
+public_folder: "/gzluosite/assets/img"
+
+collections:
+  - name: "posts"
+    label: "Blog Posts"
+    folder: "_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Layout", name: "layout", widget: "hidden", default: "post"}
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Date", name: "date", widget: "datetime"}
+      - {label: "Body", name: "body", widget: "markdown"}
+  - name: "pages"
+    label: "Pages"
+    files:
+      - label: "About Page"
+        name: "about"
+        file: "about.md"
+        fields:
+          - {label: "Layout", name: "layout", widget: "hidden", default: "page"}
+          - {label: "Title", name: "title", widget: "string"}
+          - {label: "Body", name: "body", widget: "markdown"}
