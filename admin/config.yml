@@ -2,6 +2,7 @@ backend:
   name: github
   repo: HarryLuoo/GZLuoSite
   branch: main
+  base_url: https://sveltia-cms-auth.netlify.app
 
 publish_mode: editorial_workflow
 
