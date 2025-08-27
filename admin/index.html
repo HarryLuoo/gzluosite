@@ -3,11 +3,100 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex" />
   <title>Content Manager</title>
 </head>
 <body>
   <!-- Include the script that builds the page and powers Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    CMS.init({
+      config: {
+        backend: {
+          name: "github",
+          repo: "HarryLuoo/gzluosite",
+          branch: "main",
+          base_url: "https://netlify-auth-proxy.netlify.app"
+        },
+        local_backend: true,
+        publish_mode: "editorial_workflow",
+        media_folder: "assets/img",
+        public_folder: "/gzluosite/assets/img",
+        site_url: "https://HarryLuoo.github.io/gzluosite",
+        display_url: "https://HarryLuoo.github.io/gzluosite",
+        collections: [
+          {
+            name: "posts",
+            label: "Blog Posts",
+            folder: "_posts",
+            create: true,
+            slug: "{{year}}-{{month}}-{{day}}-{{slug}}",
+            fields: [
+              {label: "Layout", name: "layout", widget: "hidden", default: "post"},
+              {label: "Title", name: "title", widget: "string"},
+              {label: "Subtitle", name: "subtitle", widget: "string", required: false},
+              {label: "Date", name: "date", widget: "datetime"},
+              {label: "Categories", name: "categories", widget: "list", required: false},
+              {label: "Tags", name: "tags", widget: "list", required: false},
+              {label: "Body", name: "body", widget: "markdown"}
+            ]
+          },
+          {
+            name: "pages",
+            label: "Pages",
+            files: [
+              {
+                label: "About Page",
+                name: "about",
+                file: "about.md",
+                fields: [
+                  {label: "Layout", name: "layout", widget: "hidden", default: "page"},
+                  {label: "Title", name: "title", widget: "string"},
+                  {label: "Permalink", name: "permalink", widget: "string"},
+                  {label: "Body", name: "body", widget: "markdown"}
+                ]
+              },
+              {
+                label: "Home Page",
+                name: "home",
+                file: "index.md",
+                fields: [
+                  {label: "Layout", name: "layout", widget: "hidden", default: "home"},
+                  {label: "Title", name: "title", widget: "string"},
+                  {label: "Content", name: "body", widget: "markdown"}
+                ]
+              }
+            ]
+          },
+          {
+            name: "config",
+            label: "Site Configuration",
+            files: [
+              {
+                label: "Site Settings",
+                name: "settings",
+                file: "_config.yml",
+                fields: [
+                  {label: "Site Title", name: "title", widget: "string"},
+                  {label: "Author", name: "author", widget: "string"},
+                  {label: "Email", name: "email", widget: "string"},
+                  {label: "Description", name: "description", widget: "text"},
+                  {
+                    label: "Social Links",
+                    name: "social_links",
+                    widget: "object",
+                    fields: [
+                      {label: "GitHub", name: "github", widget: "string", required: false},
+                      {label: "Twitter", name: "twitter", widget: "string", required: false},
+                      {label: "LinkedIn", name: "linkedin", widget: "string", required: false}
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    });
+  </script>
 </body>
 </html>
