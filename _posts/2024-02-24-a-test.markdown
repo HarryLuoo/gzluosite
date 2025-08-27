@@ -1,5 +1,0 @@
-# This is a new post
-## Markdown?
-- test if I can have it shown on the site
-$$\vec{F}= m a
-$$
