@@ -1,0 +1,71 @@
+# Connects to your GitHub repository
+backend:
+  name: github
+  repo: HarryLuoo/gzluosite
+  branch: main
+  auth_type: pkce
+  app_id: YOUR_GITHUB_OAUTH_CLIENT_ID # You'll need to replace this with your actual Client ID
+
+# Where to store uploaded images
+media_folder: "assets/img"
+public_folder: "/gzluosite/assets/img"
+
+# Site URL for preview
+site_url: https://HarryLuoo.github.io/gzluosite
+
+# Defines the content types you can edit
+collections:
+  # For blog posts, stored in the _posts folder
+  - name: "posts"
+    label: "Blog Posts"
+    folder: "_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Layout", name: "layout", widget: "hidden", default: "post"}
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Subtitle", name: "subtitle", widget: "string", required: false}
+      - {label: "Date", name: "date", widget: "datetime"}
+      - {label: "Categories", name: "categories", widget: "list", required: false}
+      - {label: "Tags", name: "tags", widget: "list", required: false}
+      - {label: "Body", name: "body", widget: "markdown"}
+
+  # For single pages like "About"
+  - name: "pages"
+    label: "Pages"
+    files:
+      - label: "About Page"
+        name: "about"
+        file: "about.md"
+        fields:
+          - {label: "Layout", name: "layout", widget: "hidden", default: "page"}
+          - {label: "Title", name: "title", widget: "string"}
+          - {label: "Permalink", name: "permalink", widget: "string"}
+          - {label: "Body", name: "body", widget: "markdown"}
+      - label: "Home Page"
+        name: "home"
+        file: "index.html"
+        fields:
+          - {label: "Layout", name: "layout", widget: "hidden", default: "home"}
+          - {label: "Title", name: "title", widget: "string"}
+          - {label: "Content", name: "body", widget: "markdown"}
+
+  # Site configuration
+  - name: "config"
+    label: "Site Configuration"
+    files:
+      - label: "Site Settings"
+        name: "settings"
+        file: "_config.yml"
+        fields:
+          - {label: "Site Title", name: "title", widget: "string"}
+          - {label: "Author", name: "author", widget: "string"}
+          - {label: "Email", name: "email", widget: "string"}
+          - {label: "Description", name: "description", widget: "text"}
+          - label: "Social Links"
+            name: "social_links"
+            widget: "object"
+            fields:
+              - {label: "GitHub", name: "github", widget: "string", required: false}
+              - {label: "Twitter", name: "twitter", widget: "string", required: false}
+              - {label: "LinkedIn", name: "linkedin", widget: "string", required: false}
