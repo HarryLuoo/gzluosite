@@ -3,6 +3,7 @@ backend:
   name: github
   repo: HarryLuoo/gzluosite
   branch: main
+  base_url: https://netlify-auth-proxy.netlify.app
 
 # Where to store uploaded images
 media_folder: "assets/img"
