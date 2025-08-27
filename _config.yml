@@ -1,0 +1,42 @@
+# Site settings
+title: Harry Luo
+author: Harry Luo
+email: your-email@example.com
+description: >-
+  A personal blog and portfolio using the Hamilton theme.
+
+# Build settings
+theme: jekyll-theme-hamilton
+
+# URL settings (for GitHub Pages)
+url: "https://HarryLuoo.github.io"
+baseurl: "/GZLuoSite"
+
+# Social media links in the footer
+social_links:
+  github: HarryLuoo
+  # twitter: your-username
+  # linkedin: your-username
+  # Add other social media platforms as needed
+
+# Jekyll settings
+markdown: kramdown
+highlighter: rouge
+permalink: /:categories/:year/:month/:day/:title/
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - admin/config.yml
