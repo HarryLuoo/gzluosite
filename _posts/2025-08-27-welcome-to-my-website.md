@@ -3,8 +3,8 @@ layout: post
 title: "Welcome to My Website!"
 subtitle: "Getting started with Jekyll and the Hamilton theme"
 date: 2025-08-27 13:50:00 -0600
-categories: [blog, welcome]
-tags: [jekyll, hamilton, website, first-post]
+categories: blog
+tags: jekyll hamilton website first-post
 ---
 
 # Welcome to My New Website!
