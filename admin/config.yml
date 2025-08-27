@@ -2,7 +2,7 @@ backend:
   name: github
   repo: HarryLuoo/GZLuoSite
   branch: main
-  base_url: https://decap-cms-oauth-provider-nu.vercel.app
+  base_url: https://decap-cms-oauth.pages.dev
 
 publish_mode: editorial_workflow
 
