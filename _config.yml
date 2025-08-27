@@ -6,7 +6,9 @@ description: >-
   A personal blog and portfolio using the Hamilton theme.
 
 # Build settings
-theme: jekyll-theme-hamilton
+# Note: GitHub Pages doesn't support jekyll-theme-hamilton directly
+# We'll use remote_theme instead
+remote_theme: zivong/jekyll-theme-hamilton
 
 # URL settings (for GitHub Pages)
 url: "https://HarryLuoo.github.io"
@@ -26,6 +28,7 @@ permalink: /:categories/:year/:month/:day/:title/
 
 # Plugins
 plugins:
+  - jekyll-remote-theme
   - jekyll-feed
   - jekyll-sitemap
   - jekyll-seo-tag
