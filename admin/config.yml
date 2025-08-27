@@ -4,7 +4,7 @@ backend:
   repo: HarryLuoo/gzluosite
   branch: main
   auth_type: pkce
-  app_id: YOUR_GITHUB_OAUTH_CLIENT_ID # You'll need to replace this with your actual Client ID
+  app_id: Ov23liYCESmcHxV5idBP
 
 # Where to store uploaded images
 media_folder: "assets/img"
@@ -12,6 +12,9 @@ public_folder: "/gzluosite/assets/img"
 
 # Site URL for preview
 site_url: https://HarryLuoo.github.io/gzluosite
+
+# Local development settings
+local_backend: true
 
 # Defines the content types you can edit
 collections:
@@ -44,7 +47,7 @@ collections:
           - {label: "Body", name: "body", widget: "markdown"}
       - label: "Home Page"
         name: "home"
-        file: "index.html"
+        file: "index.md"
         fields:
           - {label: "Layout", name: "layout", widget: "hidden", default: "home"}
           - {label: "Title", name: "title", widget: "string"}
