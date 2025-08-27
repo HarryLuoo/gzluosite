@@ -3,6 +3,9 @@ backend:
   name: github
   repo: HarryLuoo/gzluosite
   branch: main
+  auth_type: implicit
+  base_url: https://harryluoo.github.io
+  auth_endpoint: gzluosite/admin/
 
 # Where to store uploaded images
 media_folder: "assets/img"
@@ -16,6 +19,9 @@ local_backend: true
 
 # Use editorial workflow for better content management
 publish_mode: editorial_workflow
+
+# Display URL for the site
+display_url: https://HarryLuoo.github.io/gzluosite
 
 # Defines the content types you can edit
 collections:
