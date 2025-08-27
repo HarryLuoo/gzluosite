@@ -1,7 +1,5 @@
 backend:
-  name: github
-  repo: HarryLuoo/GZLuoSite # Corrected repository name
-  branch: main
+  name: git-gateway
 
 publish_mode: editorial_workflow
 
