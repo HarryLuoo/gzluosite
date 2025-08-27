@@ -1,12 +1,12 @@
 backend:
   name: github
-  repo: HarryLuoo/gzluosite
+  repo: HarryLuoo/GZLuoSite # Corrected repository name
   branch: main
-  
+
 publish_mode: editorial_workflow
 
-media_folder: "assets/img"
-public_folder: "/gzluosite/assets/img"
+media_folder: "assets/img" # Define where the media files will be stored
+public_folder: "/assets/img" # The src attribute for the media file
 
 collections:
   - name: "posts"
@@ -21,6 +21,7 @@ collections:
       - {label: "Tags", name: "tags", widget: "list", required: false}
       - {label: "Date", name: "date", widget: "datetime"}
       - {label: "Body", name: "body", widget: "markdown"}
+      - {label: "Attachment", name: "attachment", widget: "file", required: false}
       
   - name: "pages"
     label: "Pages"
@@ -54,3 +55,16 @@ collections:
           - {label: "Layout", name: "layout", widget: "hidden", default: "archive"}
           - {label: "Title", name: "title", widget: "string"}
           - {label: "Body", name: "body", widget: "markdown"}
+  - name: "navigation"
+    label: "Navigation"
+    files:
+      - label: "Main Navigation"
+        name: "main"
+        file: "_data/navigation.yml"
+        fields:
+          - label: "Navigation Links"
+            name: "links"
+            widget: "list"
+            fields:
+              - {label: "Title", name: "title", widget: "string"}
+              - {label: "URL", name: "url", widget: "string"}
