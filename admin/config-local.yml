@@ -1,12 +1,10 @@
 backend:
-  name: github
-  repo: HarryLuoo/gzluosite
-  branch: main
-  
+  name: test-repo
+
 publish_mode: editorial_workflow
 
 media_folder: "assets/img"
-public_folder: "/gzluosite/assets/img"
+public_folder: "/assets/img"
 
 collections:
   - name: "posts"
@@ -39,18 +37,4 @@ collections:
           - {label: "Layout", name: "layout", widget: "hidden", default: "page"}
           - {label: "Title", name: "title", widget: "string"}
           - {label: "Permalink", name: "permalink", widget: "string", default: "/about/"}
-          - {label: "Body", name: "body", widget: "markdown"}
-      - label: "Categories Page"
-        name: "categories"
-        file: "categories.md"
-        fields:
-          - {label: "Layout", name: "layout", widget: "hidden", default: "archive"}
-          - {label: "Title", name: "title", widget: "string"}
-          - {label: "Body", name: "body", widget: "markdown"}
-      - label: "Tags Page"
-        name: "tags"
-        file: "tags.md"
-        fields:
-          - {label: "Layout", name: "layout", widget: "hidden", default: "archive"}
-          - {label: "Title", name: "title", widget: "string"}
           - {label: "Body", name: "body", widget: "markdown"}
