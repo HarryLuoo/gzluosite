@@ -10,8 +10,8 @@ I'm 罗贵中 (Harry Luo). Up till the last update of this page, I am a senior s
 
 
 
-[GitHub: HarryLuoo](https://github.com/HarryLuoo)
+GitHub: [HarryLuoo](https://github.com/HarryLuoo)
 
-[LinkedIn: Harry (Gui-Zhong) Luo](https://www.linkedin.com/in/gzluo/)
+LinkedIn: [Harry (Gui-Zhong) Luo](https://www.linkedin.com/in/gzluo/)
 
-[Instagram: gzluoo](https://www.instagram.com/gzluoo/)
+Instagram: [gzluoo](https://www.instagram.com/gzluoo/)
