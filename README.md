@@ -198,9 +198,11 @@ The following redundant and unnecessary files have been cleaned up:
 Your site automatically deploys to GitHub Pages when you publish changes through the blog manager. The deployment URL is configured in `_config.yml`:
 
 ```yaml
-url: "https://HarryLuoo.github.io"
-baseurl: "/gzluosite"
+url: "https://harryluoo.github.io"
+baseurl: ""
 ```
+
+**Your site is now live at: https://harryluoo.github.io**
 
 ### Local Development
 To test your site locally:
@@ -208,7 +210,7 @@ To test your site locally:
 bundle exec jekyll serve
 ```
 
-Visit: `http://localhost:4000/gzluosite/`
+Visit: `http://localhost:4000/`
 
 ## Support
 

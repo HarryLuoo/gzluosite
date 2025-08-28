@@ -1,8 +1,7 @@
 backend:
-  name: test-repo
+  name: github
+  repo: HarryLuoo/harryluoo.github.io
   branch: main
-
-# publish_mode: editorial_workflow # Disabled for test-repo backend
 
 media_folder: "assets/img" # Define where the media files will be stored
 public_folder: "/assets/img" # The src attribute for the media file

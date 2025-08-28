@@ -4,7 +4,7 @@
 Your website is now fully functional with:
 - ✅ Working local development server at http://127.0.0.1:4000/
 - ✅ Complete navigation between all pages (Home, About, Categories, Tags)
-- ✅ GitHub Pages deployment at https://harryluoo.github.io/gzluosite/
+- ✅ GitHub Pages deployment at https://harryluoo.github.io/
 - ✅ Decap CMS interface available at /admin/
 - ⚠️ CMS authentication requires additional setup (see below)
 
@@ -39,7 +39,7 @@ backend:
    - Go to GitHub Settings > Developer settings > OAuth Apps
    - Click "New OAuth App"
    - Application name: Your Site CMS
-   - Homepage URL: https://harryluoo.github.io/gzluosite
+   - Homepage URL: https://harryluoo.github.io
    - Authorization callback URL: https://your-oauth-provider.vercel.app/callback
 2. Deploy the OAuth provider to Vercel (free):
    - Fork https://github.com/marcodallaba/netlify-cms-github-oauth-provider
@@ -49,7 +49,7 @@ backend:
 ```yaml
 backend:
   name: github
-  repo: HarryLuoo/gzluosite
+  repo: HarryLuoo/harryluoo.github.io
   branch: main
   base_url: https://your-oauth-provider.vercel.app
   auth_endpoint: auth
@@ -82,8 +82,8 @@ backend:
 
 ```
 /
-├── _config.yml           # Jekyll configuration
-├── _config-local.yml     # Local development config
+├── blog_manager.py      # Python blog management tool
+├── _config.yml          # Jekyll configuration
 ├── index.md             # Homepage content
 ├── about.md             # About page
 ├── categories.md        # Categories page
@@ -109,12 +109,12 @@ backend:
 
 ### With Local Development
 1. Clone your repository
-2. Run `bundle exec jekyll serve --config _config.yml,_config-local.yml`
+2. Run `bundle exec jekyll serve`
 3. Make changes locally
 4. Push to GitHub
 
 ### With CMS (After OAuth Setup)
-1. Go to https://harryluoo.github.io/gzluosite/admin/
+1. Go to https://harryluoo.github.io/admin/
 2. Login with GitHub
 3. Edit content through the visual interface
 4. Save and publish changes
@@ -128,7 +128,7 @@ backend:
 ### Issue: Local server shows errors
 - Make sure Ruby and Jekyll are installed
 - Run `bundle install` to install dependencies
-- Use the dual config command: `bundle exec jekyll serve --config _config.yml,_config-local.yml`
+- Use the standard command: `bundle exec jekyll serve`
 
 ### Issue: Changes not showing on GitHub Pages
 - Wait a few minutes for GitHub Pages to rebuild

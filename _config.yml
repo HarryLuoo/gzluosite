@@ -9,8 +9,8 @@ description: >-
 theme: minima
 
 # URL settings (for GitHub Pages)
-url: "https://HarryLuoo.github.io"
-baseurl: "/gzluosite"
+url: "https://harryluoo.github.io"
+baseurl: ""
 
 # Social media links in the footer
 social_links:
