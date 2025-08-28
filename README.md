@@ -4,7 +4,7 @@
 
 ## Overview
 
-This project provides a comprehensive Python GUI application for managing Jekyll blog posts. The blog manager handles everything from creating and editing posts to publishing them online, eliminating the need for complex CMS setups or manual Git operations.
+This project provides a Python GUI application for managing Jekyll blog posts. The blog manager handles everything from creating and editing posts to publishing them online, eliminating the need for complex CMS setups or manual Git operations.
 
 ## Features
 

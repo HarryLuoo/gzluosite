@@ -1,9 +1,9 @@
 # Site settings
 title: Harry Luo
 author: Harry Luo
-email: your-email@example.com
+email: luoogz@outlook.com
 description: >-
-  A personal blog and portfolio using the Hamilton theme.
+  A personal blog and portfolio using Jekyll.
 
 # Build settings
 theme: minima
