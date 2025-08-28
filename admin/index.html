@@ -5,13 +5,270 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex" />
   <title>Content Manager</title>
-  <!-- Force browser to reload configuration -->
-  <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0" />
-  <meta http-equiv="expires" content="0" />
-  <meta http-equiv="pragma" content="no-cache" />
 </head>
 <body>
   <!-- Include the script that builds the page and powers Decap CMS -->
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js?v=20250827-2"></script>
+  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    // Custom backend integration for local development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      console.log('Custom backend integration initializing...');
+      
+      // Override fetch to intercept all CMS operations
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+        const [url, options = {}] = args;
+        
+        // Log all fetch requests for debugging
+        console.log('Fetch intercepted:', {
+          url: url,
+          method: options.method || 'GET',
+          hasBody: !!options.body
+        });
+        
+        // Handle test-repo backend operations
+        if (typeof url === 'string') {
+          // Intercept GitHub API-style requests (for saving)
+          if (options.method === 'PUT' && url.includes('contents/')) {
+            console.log('Intercepting GitHub-style save operation');
+            
+            // Extract file path from URL
+            const urlParts = url.split('contents/');
+            const filePath = decodeURIComponent(urlParts[1] || '');
+            
+            // Parse the content
+            let content = '';
+            try {
+              const body = JSON.parse(options.body || '{}');
+              content = body.content ? atob(body.content) : '';
+            } catch (e) {
+              console.error('Error parsing body:', e);
+            }
+            
+            // Send to our backend
+            return fetch('http://localhost:8081/api/save', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                path: filePath,
+                content: content
+              })
+            }).then(response => {
+              if (response.ok) {
+                // Return a fake success response that CMS expects
+                return new Response(JSON.stringify({
+                  content: { 
+                    path: filePath,
+                    name: filePath.split('/').pop(),
+                    sha: Date.now().toString()
+                  },
+                  commit: { 
+                    sha: Date.now().toString(),
+                    message: 'Update ' + filePath
+                  }
+                }), { 
+                  status: 200, 
+                  headers: { 'Content-Type': 'application/json' }
+                });
+              }
+              throw new Error('Save failed');
+            }).catch(err => {
+              console.error('Backend save error:', err);
+              throw err;
+            });
+          }
+          
+          // Intercept test-repo specific endpoints
+          if (url.includes('/__test-repo__/')) {
+            console.log('Intercepting test-repo operation:', url);
+            
+            // Handle different test-repo endpoints
+            if (options.method === 'POST' && url.endsWith('/save')) {
+              // This is a save operation in test-repo mode
+              let body;
+              try {
+                body = JSON.parse(options.body || '{}');
+              } catch (e) {
+                console.error('Error parsing test-repo body:', e);
+                body = {};
+              }
+              
+              // Extract file information
+              const filePath = body.path || body.file || '';
+              const content = body.content || body.raw || '';
+              
+              console.log('Test-repo save:', { filePath, contentLength: content.length });
+              
+              // Send to our backend
+              return fetch('http://localhost:8081/api/save', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  path: filePath,
+                  content: content
+                })
+              }).then(response => response.json())
+                .then(data => {
+                  // Return success in test-repo format
+                  return new Response(JSON.stringify({
+                    success: true,
+                    ...data
+                  }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                  });
+                }).catch(err => {
+                  console.error('Backend save error:', err);
+                  throw err;
+                });
+            }
+            
+            // Handle file listing requests
+            if (url.includes('/files') || url.includes('/entries')) {
+              return fetch('http://localhost:8081/api/files')
+                .then(response => response.json())
+                .then(data => {
+                  return new Response(JSON.stringify(data), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                  });
+                });
+            }
+            
+            // Handle file reading requests
+            if (options.method === 'GET' && (url.includes('/file/') || url.includes('/entry/'))) {
+              const pathMatch = url.match(/\/(file|entry)\/(.+)$/);
+              if (pathMatch) {
+                const filePath = decodeURIComponent(pathMatch[2]);
+                return fetch(`http://localhost:8081/api/file?path=${encodeURIComponent(filePath)}`)
+                  .then(response => response.json())
+                  .then(data => {
+                    return new Response(JSON.stringify(data), {
+                      status: 200,
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                  });
+              }
+            }
+          }
+          
+          // Intercept local storage operations (another test-repo pattern)
+          if (url.startsWith('blob:') || url.includes('localhost') && options.method === 'POST') {
+            // Check if body contains file data
+            if (options.body) {
+              let body;
+              try {
+                // Try to parse as JSON first
+                if (typeof options.body === 'string') {
+                  body = JSON.parse(options.body);
+                } else if (options.body instanceof FormData) {
+                  // Handle FormData
+                  console.log('FormData detected, may need special handling');
+                }
+                
+                if (body && (body.path || body.slug) && body.body) {
+                  console.log('Detected CMS save via local pattern');
+                  const filePath = body.path || `_posts/${body.slug}.md`;
+                  const content = body.body || '';
+                  
+                  return fetch('http://localhost:8081/api/save', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      path: filePath,
+                      content: content
+                    })
+                  }).then(response => {
+                    if (response.ok) {
+                      return response.json().then(data => {
+                        return new Response(JSON.stringify({
+                          success: true,
+                          ...body,
+                          ...data
+                        }), {
+                          status: 200,
+                          headers: { 'Content-Type': 'application/json' }
+                        });
+                      });
+                    }
+                    throw new Error('Save failed');
+                  });
+                }
+              } catch (e) {
+                // Not JSON, continue with normal fetch
+              }
+            }
+          }
+        }
+        
+        // For all other requests, use original fetch
+        return originalFetch.apply(this, args);
+      };
+      
+      // Additional hook for CMS initialization
+      window.addEventListener('load', function() {
+        console.log('Page loaded, CMS backend hooks active');
+        
+        // Monitor localStorage changes (test-repo uses localStorage)
+        const originalSetItem = localStorage.setItem;
+        localStorage.setItem = function(key, value) {
+          console.log('LocalStorage set:', key, value ? value.substring(0, 100) + '...' : 'null');
+          
+          // Check if it's a post being saved
+          if (key && key.includes('posts/') && value) {
+            try {
+              const data = JSON.parse(value);
+              if (data.slug && data.body) {
+                console.log('Detected post save in localStorage');
+                
+                // Generate filename
+                const date = new Date().toISOString().split('T')[0];
+                const filename = `_posts/${date}-${data.slug}.md`;
+                
+                // Build markdown content
+                let content = '---\n';
+                content += `layout: ${data.layout || 'post'}\n`;
+                content += `title: "${data.title || data.slug}"\n`;
+                if (data.date) content += `date: ${data.date}\n`;
+                if (data.categories) content += `categories: ${Array.isArray(data.categories) ? data.categories.join(' ') : data.categories}\n`;
+                if (data.tags) content += `tags: ${Array.isArray(data.tags) ? data.tags.join(' ') : data.tags}\n`;
+                content += '---\n\n';
+                content += data.body || '';
+                
+                // Save to backend
+                fetch('http://localhost:8081/api/save', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    path: filename,
+                    content: content
+                  })
+                }).then(response => response.json())
+                  .then(data => {
+                    console.log('Post saved to filesystem:', data);
+                  })
+                  .catch(err => {
+                    console.error('Failed to save post:', err);
+                  });
+              }
+            } catch (e) {
+              // Not post data, ignore
+            }
+          }
+          
+          // Call original setItem
+          return originalSetItem.apply(this, arguments);
+        };
+      });
+    }
+  </script>
 </body>
 </html>

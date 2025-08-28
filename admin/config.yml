@@ -1,10 +1,8 @@
 backend:
-  name: github
-  repo: HarryLuoo/GZLuoSite
+  name: test-repo
   branch: main
-  base_url: https://decap-cms-oauth.pages.dev
 
-publish_mode: editorial_workflow
+# publish_mode: editorial_workflow # Disabled for test-repo backend
 
 media_folder: "assets/img" # Define where the media files will be stored
 public_folder: "/assets/img" # The src attribute for the media file
