@@ -46,6 +46,7 @@ class BlogManager:
         self.unsaved_changes = False
         self.repo = None
         self.auto_preview = tk.BooleanVar(value=True)
+        self.jekyll_process = None
         
         # Initialize git repository
         self.init_git_repo()
@@ -127,6 +128,9 @@ class BlogManager:
         # Publish Menu
         publish_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Publish", menu=publish_menu)
+        publish_menu.add_command(label="Serve Locally", command=self.serve_locally)
+        publish_menu.add_command(label="Stop Local Server", command=self.stop_local_server)
+        publish_menu.add_separator()
         publish_menu.add_command(label="Publish to GitHub (Ctrl+P)", command=self.publish_to_github)
         publish_menu.add_command(label="Preview in Browser", command=self.preview_in_browser)
         publish_menu.add_command(label="Refresh Preview (F5)", command=self.refresh_preview)
@@ -231,6 +235,7 @@ class BlogManager:
         toolbar.pack(fill=tk.X, padx=5, pady=5)
         
         ttk.Button(toolbar, text="Save", command=self.save_post).pack(side=tk.LEFT, padx=2)
+        ttk.Button(toolbar, text="Serve Local", command=self.serve_locally).pack(side=tk.LEFT, padx=2)
         ttk.Button(toolbar, text="Bold", command=lambda: self.wrap_text("**")).pack(side=tk.LEFT, padx=1)
         ttk.Button(toolbar, text="Italic", command=lambda: self.wrap_text("*")).pack(side=tk.LEFT, padx=1)
         ttk.Button(toolbar, text="Link", command=self.insert_link).pack(side=tk.LEFT, padx=1)
@@ -842,6 +847,53 @@ class BlogManager:
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to preview: {str(e)}")
+    
+    def serve_locally(self):
+        """Start local Jekyll server and open in browser"""
+        if self.jekyll_process and self.jekyll_process.poll() is None:
+            # Server is already running, just open browser
+            webbrowser.open("http://127.0.0.1:4000/")
+            self.status_bar.config(text="Local server already running - opened in browser")
+            return
+        
+        try:
+            # Start Jekyll server
+            self.status_bar.config(text="Starting local server...")
+            self.root.update()
+            
+            self.jekyll_process = subprocess.Popen(
+                ["bundle", "exec", "jekyll", "serve"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=os.getcwd()
+            )
+            
+            # Wait a moment for server to start
+            self.root.after(3000, self.open_local_site)
+            self.status_bar.config(text="Local server starting...")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to start server: {str(e)}")
+            self.status_bar.config(text="Failed to start server")
+    
+    def open_local_site(self):
+        """Open local site in browser after server starts"""
+        webbrowser.open("http://127.0.0.1:4000/")
+        self.status_bar.config(text="Local server running at http://127.0.0.1:4000/")
+    
+    def stop_local_server(self):
+        """Stop local Jekyll server"""
+        if self.jekyll_process:
+            try:
+                self.jekyll_process.terminate()
+                self.jekyll_process = None
+                self.status_bar.config(text="Local server stopped")
+                messagebox.showinfo("Success", "Local server stopped")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to stop server: {str(e)}")
+        else:
+            messagebox.showinfo("Info", "No local server is running")
     
     def publish_to_github(self):
         """Publish changes to GitHub"""
