@@ -121,6 +121,7 @@ After cleanup, your Jekyll site structure is now clean and organized:
 ├── _data/
 │   └── navigation.yml     # Site navigation
 ├── about.md               # About page
+├── posts.md               # Posts page
 ├── categories.md          # Categories page
 ├── tags.md               # Tags page
 ├── index.md              # Homepage

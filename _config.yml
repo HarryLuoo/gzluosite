@@ -27,6 +27,13 @@ permalink: /:categories/:year/:month/:day/:title/
 # Hamilton theme settings
 skin: daylight
 
+# Header pages (override theme navigation)
+header_pages:
+  - about.md
+  - posts.md
+  - categories.md
+  - tags.md
+
 # Plugins
 plugins:
   - jekyll-feed

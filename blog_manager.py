@@ -146,24 +146,34 @@ class BlogManager:
         self.search_var.trace('w', self.filter_posts)
         ttk.Entry(search_frame, textvariable=self.search_var).pack(fill=tk.X, pady=(2, 0))
         
-        # Posts list
+        # Content type selector
+        content_type_frame = ttk.Frame(left_frame)
+        content_type_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        self.content_type = tk.StringVar(value="Posts")
+        ttk.Radiobutton(content_type_frame, text="Posts", variable=self.content_type, 
+                       value="Posts", command=self.load_content_list).pack(side=tk.LEFT)
+        ttk.Radiobutton(content_type_frame, text="Pages", variable=self.content_type, 
+                       value="Pages", command=self.load_content_list).pack(side=tk.LEFT, padx=(10, 0))
+        
+        # Content list
         list_frame = ttk.Frame(left_frame)
         list_frame.pack(fill=tk.BOTH, expand=True)
         
         scrollbar = ttk.Scrollbar(list_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        self.posts_listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, font=("Arial", 9))
-        self.posts_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.config(command=self.posts_listbox.yview)
-        self.posts_listbox.bind('<<ListboxSelect>>', self.load_selected_post)
+        self.content_listbox = tk.Listbox(list_frame, yscrollcommand=scrollbar.set, font=("Arial", 9))
+        self.content_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.config(command=self.content_listbox.yview)
+        self.content_listbox.bind('<<ListboxSelect>>', self.load_selected_content)
         
         # Buttons
         buttons_frame = ttk.Frame(left_frame)
         buttons_frame.pack(fill=tk.X, pady=(10, 0))
-        ttk.Button(buttons_frame, text="New Post", command=self.new_post).pack(side=tk.LEFT, padx=2)
+        ttk.Button(buttons_frame, text="New", command=self.new_content).pack(side=tk.LEFT, padx=2)
         ttk.Button(buttons_frame, text="Import", command=self.import_markdown).pack(side=tk.LEFT, padx=2)
-        ttk.Button(buttons_frame, text="Delete", command=self.delete_post).pack(side=tk.LEFT, padx=2)
+        ttk.Button(buttons_frame, text="Delete", command=self.delete_content).pack(side=tk.LEFT, padx=2)
     
     def setup_editor_panel(self, parent):
         """Setup editor and preview panel"""
@@ -204,6 +214,14 @@ class BlogManager:
         self.tags_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
         self.tags_entry.bind('<KeyRelease>', self.on_change)
         
+        # Description row
+        row3 = ttk.Frame(metadata_frame)
+        row3.pack(fill=tk.X, padx=10, pady=(0, 8))
+        ttk.Label(row3, text="Description:").pack(side=tk.LEFT)
+        self.description_entry = ttk.Entry(row3)
+        self.description_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 0))
+        self.description_entry.bind('<KeyRelease>', self.on_change)
+        
         # Editor section
         editor_frame = ttk.LabelFrame(right_paned, text="Markdown Editor")
         right_paned.add(editor_frame, weight=2)
@@ -212,6 +230,7 @@ class BlogManager:
         toolbar = ttk.Frame(editor_frame)
         toolbar.pack(fill=tk.X, padx=5, pady=5)
         
+        ttk.Button(toolbar, text="Save", command=self.save_post).pack(side=tk.LEFT, padx=2)
         ttk.Button(toolbar, text="Bold", command=lambda: self.wrap_text("**")).pack(side=tk.LEFT, padx=1)
         ttk.Button(toolbar, text="Italic", command=lambda: self.wrap_text("*")).pack(side=tk.LEFT, padx=1)
         ttk.Button(toolbar, text="Link", command=self.insert_link).pack(side=tk.LEFT, padx=1)
@@ -317,11 +336,20 @@ class BlogManager:
             title += " *"
         self.root.title(title)
     
-    def load_posts_list(self):
-        """Load posts list"""
-        self.posts_listbox.delete(0, tk.END)
-        self.all_posts = []
+    def load_content_list(self):
+        """Load content list based on selected type"""
+        self.content_listbox.delete(0, tk.END)
+        self.all_content = []
         
+        if self.content_type.get() == "Posts":
+            self.load_posts_content()
+        else:
+            self.load_pages_content()
+        
+        self.filter_content()
+    
+    def load_posts_content(self):
+        """Load posts from _posts directory"""
         if self.posts_dir.exists():
             for post in sorted(self.posts_dir.glob("*.md"), reverse=True):
                 try:
@@ -334,53 +362,99 @@ class BlogManager:
                             if match:
                                 title = match.group(1)
                         
-                        self.all_posts.append({
+                        self.all_content.append({
                             'filename': post.name,
                             'title': title,
-                            'path': post
+                            'path': post,
+                            'type': 'post'
                         })
                 except:
-                    self.all_posts.append({
+                    self.all_content.append({
                         'filename': post.name,
                         'title': post.name,
-                        'path': post
+                        'path': post,
+                        'type': 'post'
                     })
+    
+    def load_pages_content(self):
+        """Load pages from root directory"""
+        page_files = ['index.md', 'about.md', 'posts.md', 'categories.md', 'tags.md']
         
-        self.filter_posts()
+        for page_name in page_files:
+            page_path = Path(page_name)
+            if page_path.exists():
+                try:
+                    with open(page_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        title = page_name
+                        
+                        if content.startswith("---"):
+                            match = re.search(r'title:\s*["\']?([^"\'\n]+)["\']?', content)
+                            if match:
+                                title = match.group(1)
+                    
+                    self.all_content.append({
+                        'filename': page_name,
+                        'title': title,
+                        'path': page_path,
+                        'type': 'page'
+                    })
+                except:
+                    self.all_content.append({
+                        'filename': page_name,
+                        'title': page_name,
+                        'path': page_path,
+                        'type': 'page'
+                    })
+    
+    def load_posts_list(self):
+        """Load posts list - legacy method for compatibility"""
+        self.load_content_list()
+    
+    def filter_content(self, *args):
+        """Filter content by search term"""
+        search_term = self.search_var.get().lower()
+        self.content_listbox.delete(0, tk.END)
+        
+        for content in self.all_content:
+            if (search_term in content['filename'].lower() or 
+                search_term in content['title'].lower()):
+                self.content_listbox.insert(tk.END, f"{content['filename']} - {content['title']}")
+        
+        self.status_bar.config(text=f"Showing {self.content_listbox.size()} items")
     
     def filter_posts(self, *args):
-        """Filter posts by search term"""
-        search_term = self.search_var.get().lower()
-        self.posts_listbox.delete(0, tk.END)
-        
-        for post in self.all_posts:
-            if (search_term in post['filename'].lower() or 
-                search_term in post['title'].lower()):
-                self.posts_listbox.insert(tk.END, f"{post['filename']} - {post['title']}")
-        
-        self.status_bar.config(text=f"Showing {self.posts_listbox.size()} posts")
+        """Legacy filter method for compatibility"""
+        self.filter_content(*args)
     
-    def load_selected_post(self, event=None):
-        """Load selected post"""
-        selection = self.posts_listbox.curselection()
+    def load_selected_content(self, event=None):
+        """Load selected content (post or page)"""
+        selection = self.content_listbox.curselection()
         if not selection:
             return
         
         if self.unsaved_changes:
-            result = messagebox.askyesnocancel("Unsaved Changes", "Save changes before loading another post?")
+            result = messagebox.askyesnocancel("Unsaved Changes", "Save changes before loading another item?")
             if result is None:
                 return
             elif result:
                 self.save_post()
         
-        filename = self.posts_listbox.get(selection[0]).split(" - ")[0]
-        post = next((p for p in self.all_posts if p['filename'] == filename), None)
-        if not post:
+        filename = self.content_listbox.get(selection[0]).split(" - ")[0]
+        content_item = next((c for c in self.all_content if c['filename'] == filename), None)
+        if not content_item:
             return
         
         try:
-            with open(post['path'], 'r', encoding='utf-8') as f:
+            with open(content_item['path'], 'r', encoding='utf-8') as f:
                 content = f.read()
+            
+            # Clear all fields first
+            self.title_entry.delete(0, tk.END)
+            self.category_entry.delete(0, tk.END)
+            self.tags_entry.delete(0, tk.END)
+            self.date_entry.delete(0, tk.END)
+            self.description_entry.delete(0, tk.END)
             
             # Parse frontmatter
             if content.startswith("---"):
@@ -388,12 +462,6 @@ class BlogManager:
                 if len(parts) >= 3:
                     frontmatter = parts[1].strip()
                     body = parts[2].strip()
-                    
-                    # Clear fields
-                    self.title_entry.delete(0, tk.END)
-                    self.category_entry.delete(0, tk.END)
-                    self.tags_entry.delete(0, tk.END)
-                    self.date_entry.delete(0, tk.END)
                     
                     # Parse metadata
                     for line in frontmatter.split('\n'):
@@ -411,6 +479,9 @@ class BlogManager:
                         elif line.startswith("date:"):
                             date = line.replace("date:", "").strip()
                             self.date_entry.insert(0, date)
+                        elif line.startswith("description:"):
+                            desc = line.replace("description:", "").strip().strip('"')
+                            self.description_entry.insert(0, desc)
                     
                     self.editor.delete(1.0, tk.END)
                     self.editor.insert(1.0, body)
@@ -418,18 +489,23 @@ class BlogManager:
                 self.editor.delete(1.0, tk.END)
                 self.editor.insert(1.0, content)
                 
-            self.current_file = post['path']
+            self.current_file = content_item['path']
+            self.current_content_type = content_item['type']
             self.unsaved_changes = False
             self.update_title()
             self.refresh_preview()
             
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to load post: {str(e)}")
+            messagebox.showerror("Error", f"Failed to load content: {str(e)}")
     
-    def new_post(self):
-        """Create new post"""
+    def load_selected_post(self, event=None):
+        """Legacy method for compatibility"""
+        self.load_selected_content(event)
+    
+    def new_content(self):
+        """Create new content (post or page)"""
         if self.unsaved_changes:
-            result = messagebox.askyesnocancel("Unsaved Changes", "Save before creating new post?")
+            result = messagebox.askyesnocancel("Unsaved Changes", "Save before creating new content?")
             if result is None:
                 return
             elif result:
@@ -437,43 +513,90 @@ class BlogManager:
         
         self.title_entry.delete(0, tk.END)
         self.category_entry.delete(0, tk.END)
-        self.category_entry.insert(0, "blog")
         self.tags_entry.delete(0, tk.END)
+        self.description_entry.delete(0, tk.END)
         self.date_entry.delete(0, tk.END)
-        self.date_entry.insert(0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        self.editor.delete(1.0, tk.END)
-        self.editor.insert(1.0, "# Your Post Title\n\nWrite your content here...")
+        
+        if self.content_type.get() == "Posts":
+            self.category_entry.insert(0, "blog")
+            self.date_entry.insert(0, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            self.editor.delete(1.0, tk.END)
+            self.editor.insert(1.0, "# Your Post Title\n\nWrite your content here...")
+        else:
+            self.editor.delete(1.0, tk.END)
+            self.editor.insert(1.0, "# Your Page Title\n\nWrite your page content here...")
         
         self.current_file = None
+        self.current_content_type = self.content_type.get().lower()[:-1]  # "Posts" -> "post"
         self.unsaved_changes = False
         self.update_title()
         self.refresh_preview()
     
+    def new_post(self):
+        """Legacy method for compatibility"""
+        self.content_type.set("Posts")
+        self.new_content()
+    
     def save_post(self):
-        """Save current post"""
+        """Save current content (post or page)"""
         title = self.title_entry.get().strip()
         if not title:
             messagebox.showerror("Error", "Title is required!")
             return
         
-        # Generate filename
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        slug = self.create_slug(title)
-        filename = f"{date_str}-{slug}.md"
+        # Determine if this is a post or page
+        is_post = hasattr(self, 'current_content_type') and self.current_content_type == 'post'
+        if not hasattr(self, 'current_content_type'):
+            is_post = self.content_type.get() == "Posts"
         
-        filepath = self.current_file if self.current_file else self.posts_dir / filename
+        if is_post:
+            # Generate filename for posts
+            date_str = datetime.now().strftime("%Y-%m-%d")
+            slug = self.create_slug(title)
+            filename = f"{date_str}-{slug}.md"
+            filepath = self.current_file if self.current_file else self.posts_dir / filename
+        else:
+            # For pages, use existing filename or create based on title
+            if self.current_file:
+                filepath = self.current_file
+            else:
+                slug = self.create_slug(title)
+                filepath = Path(f"{slug}.md")
         
         # Build content
         content = "---\n"
-        content += f'layout: post\n'
-        content += f'title: "{title}"\n'
-        content += f'date: {self.date_entry.get()}\n'
-        content += f'categories: {self.category_entry.get()}\n'
         
-        tags = self.tags_entry.get().strip()
-        if tags:
-            tags_list = [t.strip() for t in tags.split(",") if t.strip()]
-            content += f'tags: [{", ".join(tags_list)}]\n'
+        if is_post:
+            content += f'layout: post\n'
+            content += f'title: "{title}"\n'
+            content += f'date: {self.date_entry.get()}\n'
+            content += f'categories: {self.category_entry.get()}\n'
+            
+            description = self.description_entry.get().strip()
+            if description:
+                content += f'description: "{description}"\n'
+
+            tags = self.tags_entry.get().strip()
+            if tags:
+                tags_list = [t.strip() for t in tags.split(",") if t.strip()]
+                content += f'tags: [{", ".join(tags_list)}]\n'
+        else:
+            # Page layout
+            if 'index' in str(filepath):
+                content += f'layout: home\n'
+            else:
+                content += f'layout: page\n'
+            content += f'title: "{title}"\n'
+            
+            # Add permalink for pages
+            if 'about' in str(filepath):
+                content += 'permalink: /about/\n'
+            elif 'posts' in str(filepath):
+                content += 'permalink: /posts/\n'
+            elif 'categories' in str(filepath):
+                content += 'permalink: /categories/\n'
+            elif 'tags' in str(filepath):
+                content += 'permalink: /tags/\n'
         
         content += "---\n\n"
         content += self.editor.get(1.0, tk.END).strip()
@@ -485,9 +608,9 @@ class BlogManager:
             self.current_file = filepath
             self.unsaved_changes = False
             self.update_title()
-            self.load_posts_list()
+            self.load_content_list()
             self.status_bar.config(text=f"Saved: {filepath.name}")
-            messagebox.showinfo("Success", f"Post saved: {filepath.name}")
+            messagebox.showinfo("Success", f"Content saved: {filepath.name}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save: {str(e)}")
     
@@ -498,20 +621,30 @@ class BlogManager:
         slug = re.sub(r'[\s_-]+', '-', slug)
         return slug.strip('-')
     
-    def delete_post(self):
-        """Delete current post"""
+    def delete_content(self):
+        """Delete current content (post or page)"""
         if not self.current_file:
-            messagebox.showerror("Error", "No post selected!")
+            messagebox.showerror("Error", "No content selected!")
             return
         
-        if messagebox.askyesno("Delete Post", f"Delete {self.current_file.name}?"):
+        # Don't allow deletion of important pages
+        important_pages = ['index.md', 'about.md']
+        if self.current_file.name in important_pages:
+            messagebox.showerror("Error", f"Cannot delete {self.current_file.name} - it's an important page!")
+            return
+        
+        if messagebox.askyesno("Delete Content", f"Delete {self.current_file.name}?"):
             try:
                 self.current_file.unlink()
-                self.new_post()
-                self.load_posts_list()
-                messagebox.showinfo("Success", "Post deleted")
+                self.new_content()
+                self.load_content_list()
+                messagebox.showinfo("Success", "Content deleted")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to delete: {str(e)}")
+    
+    def delete_post(self):
+        """Legacy method for compatibility"""
+        self.delete_content()
     
     def import_markdown(self):
         """Import markdown file"""
