@@ -3,6 +3,7 @@ layout: post
 title: "A First Post"
 date: 2025-08-27 13:50:00 -0600
 categories: blog
+description: "helloworld?"
 ---
 
 *This post was created to demonstrate the blog functionality of the site.*
