@@ -27,8 +27,13 @@ GitHub Pages and avoids running a separate OAuth service.
 2. Paste your PAT into the **GitHub personal access token** field and click **Log in with token**.
 3. Edit content and click **Publish**. Decap CMS commits straight to `main`.
 
-The GitHub OAuth button is still available if you later wire up an OAuth provider, but you can ignore it
-for the single-maintainer workflow above.
+The default GitHub OAuth button has been removed from the interface to avoid confusion—personal access
+tokens are the only authentication method exposed in the UI today. If you later add an OAuth provider,
+you can reintroduce that button by restoring the original admin template from Git history.
+
+If you still see an error mentioning `github-pat`, perform a hard refresh in your browser to clear the
+previous admin bundle (for example, **Shift+Reload** or **Cmd+Shift+R**). The current configuration relies
+on the built-in `github` backend and should no longer reference the custom backend name.
 
 If you ever revoke or rotate the token, just mint a new one with the same scope and reuse the workflow
 above.

@@ -246,7 +246,7 @@
                   return React.createElement(
                     'section',
                     { className: 'pat-card', 'aria-live': 'polite' },
-                    React.createElement('h2', null, 'Use a personal access token'),
+                    React.createElement('h2', null, 'Sign in with a personal access token'),
                     React.createElement(
                       'p',
                       null,
@@ -324,7 +324,6 @@
                   return React.createElement(
                     'div',
                     { className: 'pat-auth-wrapper' },
-                    OriginalComponent ? React.createElement(OriginalComponent, props) : null,
                     React.createElement(TokenCard, props)
                   );
                 }
