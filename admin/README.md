@@ -24,11 +24,9 @@ GitHub Pages and avoids running a separate OAuth service.
 ### Day-to-day editing
 
 1. Open <https://harryluoo.github.io/admin/>.
-2. Paste your PAT into the **GitHub personal access token** field and click **Log in with token**.
-3. Edit content and click **Publish**. Decap CMS commits straight to `main`.
-
-The GitHub OAuth button is still available if you later wire up an OAuth provider, but you can ignore it
-for the single-maintainer workflow above.
+2. Click **Log in with token**.
+3. Paste the PAT from the step above.
+4. Edit content and click **Publish**. Decap CMS commits straight to `main`.
 
 If you ever revoke or rotate the token, just mint a new one with the same scope and reuse the workflow
 above.

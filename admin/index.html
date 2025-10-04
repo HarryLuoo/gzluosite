@@ -145,9 +145,27 @@
     window.CMS_MANUAL_INIT = true;
   </script>
 </head>
-<body class="pat-body">
-  <noscript>You need to enable JavaScript to run the content manager.</noscript>
+<body>
+  <main style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 42rem; margin: 2rem auto; padding: 1.5rem; border: 1px solid #d0d7de; border-radius: 0.75rem; background: #fff; box-shadow: 0 10px 30px rgba(27, 31, 35, 0.08);">
+    <h1 style="margin-top: 0; font-size: 1.8rem;">Decap CMS access</h1>
+    <p style="line-height: 1.6;">
+      To edit the site directly in your browser, click the <strong>Log in with token</strong> button below.
+      Generate a classic GitHub personal access token with <code>repo</code> scope and paste it into the prompt
+      when asked. Your token never leaves your browser&mdash;Decap CMS uses it to commit changes straight to
+      <code>main</code> on GitHub.
+    </p>
+    <ol style="line-height: 1.6; padding-left: 1.25rem;">
+      <li>Open <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">GitHub &rarr; Developer settings &rarr; Personal access tokens</a>.</li>
+      <li>Create a <em>classic</em> token that includes the <code>repo</code> scope.</li>
+      <li>Return here, choose <strong>Log in with token</strong>, and paste the token when prompted.</li>
+    </ol>
+    <p style="margin-bottom: 0; line-height: 1.6;">
+      Store the token in a password manager. Revoke it from GitHub if you ever suspect it is exposed, then
+      mint a new one and repeat the login process.
+    </p>
+  </main>
 
+  <!-- Include the script that builds the page and powers Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   <script>
     (function () {
