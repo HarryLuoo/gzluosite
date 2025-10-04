@@ -6,61 +6,44 @@ Your website is now fully functional with:
 - ✅ Complete navigation between all pages (Home, About, Categories, Tags)
 - ✅ GitHub Pages deployment at https://harryluoo.github.io/
 - ✅ Decap CMS interface available at /admin/
-- ⚠️ CMS authentication requires additional setup (see below)
+- ⚠️ CMS authentication requires a personal access token (see below)
 
 ## CMS Authentication Setup
 
-The CMS requires OAuth authentication to edit your site. Since GitHub Pages doesn't provide server-side functionality, you have several options:
+For a single editor you can sign in using a GitHub personal access token (PAT). This keeps hosting on
+GitHub Pages and avoids running a separate OAuth service.
 
-### Option 1: Use GitHub Personal Access Token (Simplest for single user)
+### One-time token creation (manual step)
 
-1. Go to GitHub Settings > Developer settings > Personal access tokens
-2. Generate a new token with `repo` scope
-3. Use this token to authenticate (Note: This is only suitable for personal use, not for multiple editors)
+1. Visit <https://github.com/settings/tokens>.
+2. Choose **Generate new token (classic)**.
+3. Give the token a descriptive name (for example `Decap CMS PAT`).
+4. Tick the **repo** scope so the CMS can read and write content in this repository.
+5. Create the token and copy it somewhere safe (a password manager is recommended).
 
-### Option 2: Set up a Free OAuth Backend Service
+### Day-to-day editing
 
-You can use one of these free services:
+1. Open <https://harryluoo.github.io/admin/>.
+2. Paste your PAT into the **GitHub personal access token** field and click **Log in with token**.
+3. Edit content and click **Publish**. Decap CMS commits straight to `main`.
 
-#### A. Netlify (Recommended - Most Reliable)
-1. Create a free Netlify account at https://netlify.com
-2. Deploy your site to Netlify (you can keep GitHub Pages as well)
-3. Enable Netlify Identity in your Netlify site settings
-4. Update `admin/config.yml`:
-```yaml
-backend:
-  name: git-gateway
-  branch: main
-```
-5. Add the Netlify Identity Widget to your site
+The default GitHub OAuth button has been removed from the interface to avoid confusion—personal access
+tokens are the only authentication method exposed in the UI today. If you later add an OAuth provider,
+you can reintroduce that button by restoring the original admin template from Git history.
 
-#### B. Use Vite-plugin-decap-cms-oauth
-1. Create a new GitHub OAuth App:
-   - Go to GitHub Settings > Developer settings > OAuth Apps
-   - Click "New OAuth App"
-   - Application name: Your Site CMS
-   - Homepage URL: https://harryluoo.github.io
-   - Authorization callback URL: https://your-oauth-provider.vercel.app/callback
-2. Deploy the OAuth provider to Vercel (free):
-   - Fork https://github.com/marcodallaba/netlify-cms-github-oauth-provider
-   - Deploy to Vercel
-   - Set environment variables with your GitHub OAuth App credentials
-3. Update `admin/config.yml`:
-```yaml
-backend:
-  name: github
-  repo: HarryLuoo/harryluoo.github.io
-  branch: main
-  base_url: https://your-oauth-provider.vercel.app
-  auth_endpoint: auth
-```
+The admin bootstrap now clears any cached configuration that still references the legacy `github-pat`
+backend name and registers a compatibility alias so either identifier resolves to the same GitHub
+integration. If you still see an error mentioning `github-pat` after the script updates, perform a hard
+refresh in your browser to reload the latest bundle (for example, **Shift+Reload** or **Cmd+Shift+R**).
 
-### Option 3: Use GitHub.dev (Alternative Editor)
+If you ever revoke or rotate the token, just mint a new one with the same scope and reuse the workflow
+above.
 
-For quick edits without CMS:
-1. Press `.` (period) on your GitHub repository page
-2. This opens GitHub.dev - a web-based VS Code editor
-3. Make edits directly and commit from the browser
+### Alternative backends (optional)
+
+If you later decide to add more collaborators, consider wiring the CMS to a multi-user backend such as
+Netlify Identity/Git Gateway or a self-hosted OAuth proxy. The previous revision of this document captured
+those options and can be recovered from Git history when needed.
 
 ## Local Development with CMS
 
@@ -113,31 +96,8 @@ backend:
 3. Make changes locally
 4. Push to GitHub
 
-### With CMS (After OAuth Setup)
+### With CMS (Using PAT)
 1. Go to https://harryluoo.github.io/admin/
-2. Login with GitHub
+2. Log in with your personal access token
 3. Edit content through the visual interface
 4. Save and publish changes
-
-## Troubleshooting
-
-### Issue: "404: NOT_FOUND" when logging in
-- This means the OAuth provider isn't set up yet
-- Follow one of the authentication setup options above
-
-### Issue: Local server shows errors
-- Make sure Ruby and Jekyll are installed
-- Run `bundle install` to install dependencies
-- Use the standard command: `bundle exec jekyll serve`
-
-### Issue: Changes not showing on GitHub Pages
-- Wait a few minutes for GitHub Pages to rebuild
-- Check the Actions tab in your repository for build status
-- Clear browser cache and refresh
-
-## Next Steps
-
-1. Choose and implement an authentication method from the options above
-2. Consider adding more content to your site
-3. Customize the theme and styling
-4. Add a custom domain if desired
