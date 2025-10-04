@@ -1,17 +1,16 @@
 # Assistant Notes
 
 ## Summary of changes
-- Replaced the `/admin` entry point with a custom GitHub backend wrapper that surfaces an on-page personal access token form and registers it as `github-pat` for Decap CMS.
-- Updated `admin/config.yml` to point at the new backend name and keep the repository/branch targets unchanged.
-- Refreshed `admin/README.md` so the day-to-day workflow matches the embedded token login form.
-- Patched the wrapper to reuse the built-in GitHub backend instance during initialization so the `github-pat` backend is always registered before the CMS loads, restoring the `/admin` login experience.
+- Added an informational banner to `/admin` explaining the personal access token (PAT) login workflow for Decap CMS.
+- Rewrote `admin/README.md` to focus on the PAT-based authentication process and day-to-day editing steps.
+- Confirmed that existing Decap CMS configuration (`admin/config.yml`) already targets the repository's `main` branch and requires no additional changes.
 
 ## Outstanding actions for the site owner
-1. Generate a classic GitHub personal access token with the `repo` scope at <https://github.com/settings/tokens> and store it securely.
-2. Visit <https://harryluoo.github.io/admin/>, paste the token into the **GitHub personal access token** field, and click **Log in with token**.
-3. Rotate or revoke the token in GitHub if it is ever exposed or when you choose to cycle credentials.
+1. Generate a classic GitHub personal access token with the `repo` scope by visiting <https://github.com/settings/tokens>.
+2. Store the token securely (for example in a password manager).
+3. Use the token when clicking **Log in with token** on <https://harryluoo.github.io/admin/>.
+4. Revoke and regenerate the token if it is ever exposed or when you want to rotate credentials.
 
 ## Observations
-- The GitHub OAuth button remains available for future multi-user setups, but the embedded PAT form now handles the single-maintainer flow without relying on hidden UI options.
-- All of the existing local-development hooks (proxy saves, file listings, `localStorage` mirroring) were carried forward into the new `/admin` entry point so the `npx @decapcms/proxy-server` workflow continues to function.
-- Future-dated posts (for example the 2025 entry) stay hidden on the public site until their dates arrive unless `future: true` is added to `_config.yml`.
+- Future-dated posts (e.g., the 2025 entry) will stay hidden on the public site until their dates arrive unless `future: true` is added to `_config.yml`.
+- The custom local-development script embedded in `admin/index.html` is untouched and continues to support the local proxy workflow described in `admin/README.md`.
