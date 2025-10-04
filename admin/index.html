@@ -145,227 +145,202 @@
     window.CMS_MANUAL_INIT = true;
   </script>
 </head>
-<body class="pat-body">
-  <noscript>You need to enable JavaScript to run the content manager.</noscript>
+<body>
+  <main style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 42rem; margin: 2rem auto; padding: 1.5rem; border: 1px solid #d0d7de; border-radius: 0.75rem; background: #fff; box-shadow: 0 10px 30px rgba(27, 31, 35, 0.08);">
+    <h1 style="margin-top: 0; font-size: 1.8rem;">Decap CMS access</h1>
+    <p style="line-height: 1.6;">
+      To edit the site directly in your browser, click the <strong>Log in with token</strong> button below.
+      Generate a classic GitHub personal access token with <code>repo</code> scope and paste it into the prompt
+      when asked. Your token never leaves your browser&mdash;Decap CMS uses it to commit changes straight to
+      <code>main</code> on GitHub.
+    </p>
+    <ol style="line-height: 1.6; padding-left: 1.25rem;">
+      <li>Open <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">GitHub &rarr; Developer settings &rarr; Personal access tokens</a>.</li>
+      <li>Create a <em>classic</em> token that includes the <code>repo</code> scope.</li>
+      <li>Return here, choose <strong>Log in with token</strong>, and paste the token when prompted.</li>
+    </ol>
+    <p style="margin-bottom: 0; line-height: 1.6;">
+      Store the token in a password manager. Revoke it from GitHub if you ever suspect it is exposed, then
+      mint a new one and repeat the login process.
+    </p>
+  </main>
 
+  <!-- Include the script that builds the page and powers Decap CMS -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   <script>
     (function () {
       function initializeCms() {
         var CMS = window.CMS;
+        var React = window.React;
 
-        if (!CMS) {
-          console.error('Decap CMS failed to expose the CMS global.');
-          return;
-        }
-
-        try {
-          var storage = window.localStorage;
-          if (storage && typeof storage.getItem === 'function' && typeof storage.removeItem === 'function') {
-            ['decap.cms.config', 'netlify-cms-app', 'cms.config'].forEach(function (key) {
-              try {
-                var existing = storage.getItem(key);
-                if (existing && existing.indexOf('github-pat') !== -1) {
-                  storage.removeItem(key);
-                }
-              } catch (keyError) {
-                console.warn('Unable to inspect cached CMS config key.', keyError);
-              }
-            });
+        if (!CMS || !React) {
+          console.error('Decap CMS failed to expose the expected globals.');
+          if (CMS) {
+            CMS.init({ config: { load_config_file: true } });
           }
-        } catch (storageError) {
-          console.warn('Unable to inspect cached CMS config overrides.', storageError);
-        }
-
-        var React = CMS.React || window.React;
-        if (!React) {
-          console.error('React was not exposed by Decap CMS; falling back to the default login UI.');
-          CMS.init({ config: { load_config_file: true } });
           return;
         }
 
         var backendEntry = CMS.getBackend('github');
-        if (!backendEntry || typeof backendEntry.init !== 'function') {
+        if (!backendEntry) {
           console.error('Decap CMS GitHub backend could not be located.');
           CMS.init({ config: { load_config_file: true } });
           return;
         }
 
-        if (!backendEntry.__patWrapped) {
-          var originalInit = backendEntry.init;
+        var BaseBackend = backendEntry.init;
 
-          backendEntry.init = function init(config, options) {
-            return Promise.resolve(originalInit.call(this, config, options)).then(function (backend) {
-              if (!backend || typeof backend.authComponent !== 'function') {
-                return backend;
+        class GitHubPatBackend extends BaseBackend {
+          authComponent() {
+            var OriginalComponent = super.authComponent();
+            var React = window.React;
+            var useState = React.useState;
+            var useRef = React.useRef;
+            var useEffect = React.useEffect;
+
+            function TokenCard(props) {
+              var onLogin = props.onLogin;
+              var disabled = props.inProgress;
+              var _useState = useState('');
+              var token = _useState[0];
+              var setToken = _useState[1];
+              var _useState2 = useState(false);
+              var submitting = _useState2[0];
+              var setSubmitting = _useState2[1];
+              var _useState3 = useState('');
+              var error = _useState3[0];
+              var setError = _useState3[1];
+              var inputRef = useRef(null);
+
+              useEffect(function () {
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
+              }, []);
+
+              function handleSubmit(event) {
+                event.preventDefault();
+                var trimmed = token.trim();
+                if (!trimmed) {
+                  setError('Paste the token you generated on GitHub.');
+                  return;
+                }
+
+                setSubmitting(true);
+                setError('');
+
+                try {
+                  Promise.resolve(onLogin({ token: trimmed })).catch(function (err) {
+                    console.error('Token login failed:', err);
+                    var message =
+                      (err && err.message) ||
+                      (err && err.toString && err.toString()) ||
+                      'Unable to log in with that token.';
+                    setError(message);
+                    setSubmitting(false);
+                  });
+                } catch (err) {
+                  console.error('Token login failed:', err);
+                  var fallback =
+                    (err && err.message) ||
+                    (err && err.toString && err.toString()) ||
+                    'Unable to log in with that token.';
+                  setError(fallback);
+                  setSubmitting(false);
+                }
               }
 
-              var originalAuthComponent = backend.authComponent.bind(backend);
-
-              backend.authComponent = function authComponent() {
-                var OriginalComponent = originalAuthComponent();
-
-                var useState = React.useState;
-                var useRef = React.useRef;
-                var useEffect = React.useEffect;
-
-                function TokenCard(props) {
-                  var onLogin = props.onLogin;
-                  var disabled = props.inProgress;
-                  var _useState = useState('');
-                  var token = _useState[0];
-                  var setToken = _useState[1];
-                  var _useState2 = useState(false);
-                  var submitting = _useState2[0];
-                  var setSubmitting = _useState2[1];
-                  var _useState3 = useState('');
-                  var error = _useState3[0];
-                  var setError = _useState3[1];
-                  var inputRef = useRef(null);
-
-                  useEffect(function () {
-                    if (inputRef.current) {
-                      inputRef.current.focus();
-                    }
-                  }, []);
-
-                  function handleSubmit(event) {
-                    event.preventDefault();
-                    var trimmed = token.trim();
-                    if (!trimmed) {
-                      setError('Paste the token you generated on GitHub.');
-                      return;
-                    }
-
-                    setSubmitting(true);
-                    setError('');
-
-                    try {
-                      Promise.resolve(onLogin({ token: trimmed })).catch(function (err) {
-                        console.error('Token login failed:', err);
-                        var message =
-                          (err && err.message) ||
-                          (err && err.toString && err.toString()) ||
-                          'Unable to log in with that token.';
-                        setError(message);
-                        setSubmitting(false);
-                      });
-                    } catch (err) {
-                      console.error('Token login failed:', err);
-                      var fallback =
-                        (err && err.message) ||
-                        (err && err.toString && err.toString()) ||
-                        'Unable to log in with that token.';
-                      setError(fallback);
-                      setSubmitting(false);
-                    }
-                  }
-
-                  return React.createElement(
-                    'section',
-                    { className: 'pat-card', 'aria-live': 'polite' },
-                    React.createElement('h2', null, 'Sign in with a personal access token'),
+              return React.createElement(
+                'section',
+                { className: 'pat-card', 'aria-live': 'polite' },
+                React.createElement('h2', null, 'Use a personal access token'),
+                React.createElement(
+                  'p',
+                  null,
+                  'Generate a classic token with ',
+                  React.createElement('code', null, 'repo'),
+                  ' scope and paste it below to edit this site.'
+                ),
+                React.createElement(
+                  'ol',
+                  null,
+                  React.createElement(
+                    'li',
+                    null,
                     React.createElement(
-                      'p',
-                      null,
-                      'Generate a classic token with ',
-                      React.createElement('code', null, 'repo'),
-                      ' scope and paste it below to edit this site.'
-                    ),
-                    React.createElement(
-                      'ol',
-                      null,
-                      React.createElement(
-                        'li',
-                        null,
-                        React.createElement(
-                          'a',
-                          {
-                            href: 'https://github.com/settings/tokens',
-                            target: '_blank',
-                            rel: 'noopener noreferrer',
-                          },
-                          'Open GitHub’s token settings'
-                        )
-                      ),
-                      React.createElement(
-                        'li',
-                        null,
-                        'Create a classic token that includes the ',
-                        React.createElement('code', null, 'repo'),
-                        ' scope.'
-                      ),
-                      React.createElement(
-                        'li',
-                        null,
-                        'Paste the token into the field below and sign in.'
-                      )
-                    ),
-                    error ? React.createElement('p', { className: 'pat-error' }, error) : null,
-                    React.createElement(
-                      'form',
-                      { className: 'pat-form', onSubmit: handleSubmit },
-                      React.createElement(
-                        'label',
-                        { htmlFor: 'pat-input' },
-                        'GitHub personal access token'
-                      ),
-                      React.createElement('input', {
-                        id: 'pat-input',
-                        ref: inputRef,
-                        type: 'password',
-                        autoComplete: 'off',
-                        inputMode: 'text',
-                        placeholder: 'ghp_XXXXXXXXXXXXXXXXXXXX',
-                        value: token,
-                        onChange: function onChange(event) {
-                          setToken(event.target.value);
-                        },
-                        disabled: disabled || submitting,
-                        required: true,
-                      }),
-                      React.createElement(
-                        'button',
-                        { type: 'submit', disabled: disabled || submitting },
-                        disabled || submitting ? 'Signing in…' : 'Log in with token'
-                      ),
-                      React.createElement(
-                        'p',
-                        { className: 'pat-footnote' },
-                        'Keep the token in a password manager and revoke it from GitHub if it is ever exposed.'
-                      )
+                      'a',
+                      {
+                        href: 'https://github.com/settings/tokens',
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      },
+                      'Open GitHub’s token settings'
                     )
-                  );
-                }
-
-                function WrappedAuth(props) {
-                  return React.createElement(
-                    'div',
-                    { className: 'pat-auth-wrapper' },
-                    React.createElement(TokenCard, props)
-                  );
-                }
-
-                return WrappedAuth;
-              };
-
-              return backend;
-            });
-          };
-
-          backendEntry.__patWrapped = true;
-        }
-
-        if (typeof CMS.registerBackend === 'function') {
-          try {
-            var existingAlias = CMS.getBackend && CMS.getBackend('github-pat');
-            if (!existingAlias) {
-              CMS.registerBackend('github-pat', backendEntry);
+                  ),
+                  React.createElement(
+                    'li',
+                    null,
+                    'Create a classic token that includes the ',
+                    React.createElement('code', null, 'repo'),
+                    ' scope.'
+                  ),
+                  React.createElement(
+                    'li',
+                    null,
+                    'Paste the token into the field below and sign in.'
+                  )
+                ),
+                error ? React.createElement('p', { className: 'pat-error' }, error) : null,
+                React.createElement(
+                  'form',
+                  { className: 'pat-form', onSubmit: handleSubmit },
+                  React.createElement(
+                    'label',
+                    { htmlFor: 'pat-input' },
+                    'GitHub personal access token'
+                  ),
+                  React.createElement('input', {
+                    id: 'pat-input',
+                    ref: inputRef,
+                    type: 'password',
+                    autoComplete: 'off',
+                    inputMode: 'text',
+                    placeholder: 'ghp_XXXXXXXXXXXXXXXXXXXX',
+                    value: token,
+                    onChange: function onChange(event) {
+                      setToken(event.target.value);
+                    },
+                    disabled: disabled || submitting,
+                    required: true,
+                  }),
+                  React.createElement(
+                    'button',
+                    { type: 'submit', disabled: disabled || submitting },
+                    disabled || submitting ? 'Signing in…' : 'Log in with token'
+                  ),
+                  React.createElement(
+                    'p',
+                    { className: 'pat-footnote' },
+                    'Keep the token in a password manager and revoke it from GitHub if it is ever exposed.'
+                  )
+                )
+              );
             }
-          } catch (aliasError) {
-            console.warn('Unable to register github-pat alias backend.', aliasError);
+
+            function WrappedAuth(props) {
+              return React.createElement(
+                'div',
+                { className: 'pat-auth-wrapper' },
+                React.createElement(OriginalComponent, props),
+                React.createElement(TokenCard, props)
+              );
+            }
+
+            return WrappedAuth;
           }
         }
+
+        CMS.registerBackend('github-pat', GitHubPatBackend);
         CMS.init({ config: { load_config_file: true } });
       }
 
