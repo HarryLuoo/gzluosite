@@ -1,16 +1,16 @@
 # Assistant Notes
 
 ## Summary of changes
-- Simplified the `/admin` bootstrap to rely on Decap’s native config loader while wrapping the GitHub backend so the PAT login card renders first and the stock auth component stays available behind a collapsible fallback.
-- Registered a `configLoaded` listener to normalize any lingering `github-pat` backend names and keep the alias registration without depending on manual YAML parsing.
-- Updated `admin/README.md` to describe the primary PAT flow, the hidden fallback login, and the new normalization strategy.
+- Added an informational banner to `/admin` explaining the personal access token (PAT) login workflow for Decap CMS.
+- Rewrote `admin/README.md` to focus on the PAT-based authentication process and day-to-day editing steps.
+- Confirmed that existing Decap CMS configuration (`admin/config.yml`) already targets the repository's `main` branch and requires no additional changes.
 
 ## Outstanding actions for the site owner
-1. Generate a classic GitHub personal access token with the `repo` scope at <https://github.com/settings/tokens> and store it securely.
-2. Visit <https://harryluoo.github.io/admin/>, paste the token into the **GitHub personal access token** field, and click **Log in with token**.
-3. Rotate or revoke the token in GitHub if it is ever exposed or when you choose to cycle credentials.
+1. Generate a classic GitHub personal access token with the `repo` scope by visiting <https://github.com/settings/tokens>.
+2. Store the token securely (for example in a password manager).
+3. Use the token when clicking **Log in with token** on <https://harryluoo.github.io/admin/>.
+4. Revoke and regenerate the token if it is ever exposed or when you want to rotate credentials.
 
-- The GitHub OAuth button is tucked inside an expandable fallback so future providers (or the local proxy) remain usable without crowding the main PAT workflow.
-- Cached configs that still mention `github-pat` are cleared on load, then normalized via the `configLoaded` listener before CMS initialization continues, so older bundles no longer block login.
-- All of the existing local-development hooks (proxy saves, file listings, `localStorage` mirroring) were carried forward into the new `/admin` entry point so the `npx @decapcms/proxy-server` workflow continues to function.
-- Future-dated posts (for example the 2025 entry) stay hidden on the public site until their dates arrive unless `future: true` is added to `_config.yml`.
+## Observations
+- Future-dated posts (e.g., the 2025 entry) will stay hidden on the public site until their dates arrive unless `future: true` is added to `_config.yml`.
+- The custom local-development script embedded in `admin/index.html` is untouched and continues to support the local proxy workflow described in `admin/README.md`.

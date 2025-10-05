@@ -24,17 +24,9 @@ GitHub Pages and avoids running a separate OAuth service.
 ### Day-to-day editing
 
 1. Open <https://harryluoo.github.io/admin/>.
-2. Paste your PAT into the **GitHub personal access token** field and click **Log in with token**.
-3. Edit content and click **Publish**. Decap CMS commits straight to `main`.
-
-The PAT form is now the primary login path. A collapsible “Need the standard Decap login instead?”
-section is available underneath if you ever restore OAuth or test against the local proxy—the default
-component still renders there so nothing is lost.
-
-Behind the scenes the admin bootstrap clears cached configs that reference the legacy `github-pat`
-backend and normalizes any stray references during the `configLoaded` event before initialization
-continues. If you still see an error mentioning `github-pat`, perform a hard refresh in your browser
-(for example, **Shift+Reload** or **Cmd+Shift+R**) to ensure the latest bundle is downloaded.
+2. Click **Log in with token**.
+3. Paste the PAT from the step above.
+4. Edit content and click **Publish**. Decap CMS commits straight to `main`.
 
 If you ever revoke or rotate the token, just mint a new one with the same scope and reuse the workflow
 above.
