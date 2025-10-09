@@ -446,10 +446,12 @@
           var backendResult = resolveBackendInstance(arguments);
 
           if (backendResult && typeof backendResult.then === 'function') {
-            console.warn(
-              'GitHub PAT backend constructor received an asynchronous backend; returning the unresolved result.'
-            );
-            return backendResult;
+            return backendResult.then(function (backendInstance) {
+              if (backendInstance && typeof backendInstance === 'object') {
+                attachPatAuth(backendInstance);
+              }
+              return backendInstance;
+            });
           }
 
           if (backendResult && typeof backendResult === 'object') {
