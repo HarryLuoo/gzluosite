@@ -171,14 +171,28 @@
     (function () {
       function initializeCms() {
         var CMS = window.CMS;
-        var React = window.React;
 
-        if (!CMS || !React) {
-          console.error('Decap CMS failed to expose the expected globals.');
-          if (CMS) {
-            CMS.init({ config: { load_config_file: true } });
-          }
+        if (!CMS) {
+          console.error('Decap CMS failed to expose the CMS global.');
           return;
+        }
+
+        var React = null;
+        if (typeof CMS.getLibrary === 'function') {
+          var ReactLib = CMS.getLibrary('react');
+          if (ReactLib) {
+            React = ReactLib.default || ReactLib;
+          }
+        }
+
+        if (!React && typeof window !== 'undefined') {
+          React = window.React;
+        }
+
+        if (!React) {
+          console.error(
+            'Decap CMS React library could not be located; token login UI disabled.'
+          );
         }
 
         var backendEntry = CMS.getBackend('github');
@@ -198,10 +212,25 @@
         class GitHubPatBackend extends BaseBackend {
           authComponent() {
             var OriginalComponent = super.authComponent();
-            var React = window.React;
+
+            if (!React) {
+              return OriginalComponent;
+            }
+
             var useState = React.useState;
             var useRef = React.useRef;
             var useEffect = React.useEffect;
+
+            if (
+              typeof useState !== 'function' ||
+              typeof useRef !== 'function' ||
+              typeof useEffect !== 'function'
+            ) {
+              console.error(
+                'React hooks unavailable; falling back to default Decap CMS auth UI.'
+              );
+              return OriginalComponent;
+            }
 
             function TokenCard(props) {
               var onLogin = props.onLogin;
