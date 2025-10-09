@@ -188,7 +188,12 @@
           return;
         }
 
-        var BaseBackend = backendEntry.init;
+        var BaseBackend = backendEntry && (backendEntry.default || backendEntry);
+        if (typeof BaseBackend !== 'function') {
+          console.error('Unexpected Decap CMS GitHub backend shape.', backendEntry);
+          CMS.init({ config: { load_config_file: true } });
+          return;
+        }
 
         class GitHubPatBackend extends BaseBackend {
           authComponent() {
