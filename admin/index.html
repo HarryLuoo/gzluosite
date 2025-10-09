@@ -203,15 +203,49 @@
         }
 
         var BaseBackend = backendEntry && (backendEntry.default || backendEntry);
-        if (typeof BaseBackend !== 'function') {
-          console.error('Unexpected Decap CMS GitHub backend shape.', backendEntry);
-          CMS.init({ config: { load_config_file: true } });
-          return;
+        var baseInit = null;
+
+        if (backendEntry && typeof backendEntry.init === 'function') {
+          baseInit = backendEntry.init.bind(backendEntry);
+        } else if (typeof BaseBackend === 'function') {
+          baseInit = function () {
+            var args = Array.prototype.slice.call(arguments);
+            return new (Function.prototype.bind.apply(
+              BaseBackend,
+              [null].concat(args)
+            ))();
+          };
         }
 
-        class GitHubPatBackend extends BaseBackend {
-          authComponent() {
-            var OriginalComponent = super.authComponent();
+        if (!baseInit) {
+          console.error(
+            'Unexpected Decap CMS GitHub backend shape; continuing without PAT enhancements.',
+            backendEntry
+          );
+        }
+
+        function attachPatAuth(backendInstance) {
+          if (!backendInstance || backendInstance.__githubPatAuthPatched) {
+            return backendInstance;
+          }
+
+          var originalAuthComponent =
+            backendInstance && typeof backendInstance.authComponent === 'function'
+              ? backendInstance.authComponent.bind(backendInstance)
+              : null;
+
+          if (typeof originalAuthComponent !== 'function') {
+            return backendInstance;
+          }
+
+          backendInstance.__githubPatAuthPatched = true;
+
+          backendInstance.authComponent = function () {
+            var OriginalComponent = originalAuthComponent();
+
+            if (!OriginalComponent) {
+              return OriginalComponent;
+            }
 
             if (!React) {
               return OriginalComponent;
@@ -371,8 +405,63 @@
             }
 
             return WrappedAuth;
-          }
+          };
+
+          return backendInstance;
         }
+
+        function resolveBackendInstance(argsLike) {
+          var args = Array.prototype.slice.call(argsLike || []);
+          var backendResult = null;
+
+          if (baseInit) {
+            backendResult = baseInit.apply(null, args);
+          } else if (backendEntry && typeof backendEntry.init === 'function') {
+            backendResult = backendEntry.init.apply(backendEntry, args);
+          } else if (typeof BaseBackend === 'function') {
+            backendResult = new (Function.prototype.bind.apply(
+              BaseBackend,
+              [null].concat(args)
+            ))();
+          } else {
+            console.error(
+              'Unable to initialize Decap CMS GitHub backend; returning original entry.'
+            );
+            backendResult = backendEntry;
+          }
+
+          return backendResult;
+        }
+
+        function enhanceBackendResult(backendResult) {
+          return Promise.resolve(backendResult).then(function (backendInstance) {
+            if (backendInstance && typeof backendInstance === 'object') {
+              attachPatAuth(backendInstance);
+            }
+            return backendInstance;
+          });
+        }
+
+        function GitHubPatBackend() {
+          var backendResult = resolveBackendInstance(arguments);
+
+          if (backendResult && typeof backendResult.then === 'function') {
+            console.warn(
+              'GitHub PAT backend constructor received an asynchronous backend; returning the unresolved result.'
+            );
+            return backendResult;
+          }
+
+          if (backendResult && typeof backendResult === 'object') {
+            attachPatAuth(backendResult);
+          }
+
+          return backendResult;
+        }
+
+        GitHubPatBackend.init = function () {
+          return enhanceBackendResult(resolveBackendInstance(arguments));
+        };
 
         CMS.registerBackend('github-pat', GitHubPatBackend);
         CMS.init({ config: { load_config_file: true } });
